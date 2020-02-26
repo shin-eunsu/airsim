@@ -16,7 +16,7 @@ if ('../PythonClient/' not in sys.path):
 MODEL_PATH = None
 
 if (MODEL_PATH == None):
-    models = glob.glob('model\models\*.h5')
+    models = glob.glob('model2\models\*.h5')
     print("** ", models)
     best_model = max(models, key=os.path.getctime)
     MODEL_PATH = best_model
@@ -28,13 +28,14 @@ client = airsim.CarClient()
 client.confirmConnection()
 client.enableApiControl(True)
 car_controls = airsim.CarControls()
+client.reset()
 print('Connection established!')
 
 # 차량위치 변경
-position = airsim.Vector3r(39, 94, 9.9)
-heading = airsim.utils.to_quaternion(0, 0, 2.5)
-pose = airsim.Pose(position, heading)
-client.simSetVehiclePose(pose, True)
+# position = airsim.Vector3r(39, 94, 9.9)
+# heading = airsim.utils.to_quaternion(0, 0, 2.5)
+# pose = airsim.Pose(position, heading)
+# client.simSetVehiclePose(pose, True)
 
 car_controls.steering = 0
 car_controls.throttle = 0
@@ -55,10 +56,10 @@ def get_image():
 while (True):
     car_state = client.getCarState()
 
-    # if (car_state.speed < 3):
-    #     car_controls.throttle = 1
-    # else:
-    #     car_controls.throttle = 0.0
+    if (car_state.speed < 3):
+        car_controls.throttle = 1
+    else:
+        car_controls.throttle = 0.0
 
     image_buf[0] = get_image()
     state_buf[0] = np.array([car_controls.steering, car_controls.throttle, car_controls.brake, car_state.speed])

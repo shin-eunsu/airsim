@@ -51,14 +51,16 @@ def get_image():
 
     return image_rgba[76:135, 0:255, 0:3].astype(float)
 
+model_output = model.predict([image_buf, state_buf])
+model_output.shape()
 
 while (True):
     car_state = client.getCarState()
 
-    # if (car_state.speed < 3):
-    #     car_controls.throttle = 1
-    # else:
-    #     car_controls.throttle = 0.0
+    if (car_state.speed < 3):
+        car_controls.throttle = 1
+    else:
+        car_controls.throttle = 0.0
 
     image_buf[0] = get_image()
     state_buf[0] = np.array([car_controls.steering, car_controls.throttle, car_controls.brake, car_state.speed])
