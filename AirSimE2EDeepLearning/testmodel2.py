@@ -64,7 +64,7 @@ while (True):
     image_buf[0] = get_image()
     state_buf[0] = np.array([car_controls.steering, car_controls.throttle, car_controls.brake, car_state.speed])
     model_output = model.predict([image_buf, state_buf])
-    car_controls.steering = round(0.5 * float(model_output[0][0]), 2)
+    car_controls.steering = round(-0.05 * float(model_output[0][0]), 2)
     # print('model_ouput: ', (model_output[0][0]))
     print('Sending steering = {0}, throttle = {1}'.format(car_controls.steering, car_controls.throttle))
 

@@ -3,8 +3,12 @@ import sys
 import numpy as np
 import glob
 import os
-
+import tensorflow as tf
 import airsim
+import time
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+session = tf.Session(config=config)
 
 if ('../PythonClient/' not in sys.path):
     sys.path.insert(0, '../PythonClient/')
@@ -16,7 +20,7 @@ if ('../PythonClient/' not in sys.path):
 MODEL_PATH = None
 
 if (MODEL_PATH == None):
-    models = glob.glob('model\models\*.h5')
+    models = glob.glob('C:\END_TO_END_DATA\model_Coastline2\models\*.h5')
     print("** ", models)
     best_model = max(models, key=os.path.getctime)
     MODEL_PATH = best_model
@@ -28,13 +32,15 @@ client = airsim.CarClient()
 client.confirmConnection()
 client.enableApiControl(True)
 car_controls = airsim.CarControls()
+# client.reset()
 print('Connection established!')
 
+
 # 차량위치 변경
-position = airsim.Vector3r(39, 94, 9.9)
-heading = airsim.utils.to_quaternion(0, 0, 2.5)
-pose = airsim.Pose(position, heading)
-client.simSetVehiclePose(pose, True)
+# position = airsim.Vector3r(39, 94, 9.9)
+# heading = airsim.utils.to_quaternion(0, 0, 2.5)
+# pose = airsim.Pose(position, heading)
+# client.simSetVehiclePose(pose, True)
 
 car_controls.steering = 0
 car_controls.throttle = 0
@@ -51,22 +57,24 @@ def get_image():
 
     return image_rgba[76:135, 0:255, 0:3].astype(float)
 
-model_output = model.predict([image_buf, state_buf])
-model_output.shape()
 
 while (True):
     car_state = client.getCarState()
 
-    if (car_state.speed < 3):
-        car_controls.throttle = 1
-    else:
-        car_controls.throttle = 0.0
+    # if (car_state.speed < 30):
+    #     car_controls.throttle = 1
+    # else:
+    #     car_controls.throttle = 0.0
 
     image_buf[0] = get_image()
     state_buf[0] = np.array([car_controls.steering, car_controls.throttle, car_controls.brake, car_state.speed])
     model_output = model.predict([image_buf, state_buf])
-    car_controls.steering = round(0.5 * float(model_output[0][0]), 2)
+    car_controls.steering = round(-0.069 * float(model_output[0][0]), 2)
+
+    car_controls.throttle = 1 - abs(car_controls.steering)
+
     # print('model_ouput: ', (model_output[0][0]))
     print('Sending steering = {0}, throttle = {1}'.format(car_controls.steering, car_controls.throttle))
 
     client.setCarControls(car_controls)
+    # time.sleep(0.02)
